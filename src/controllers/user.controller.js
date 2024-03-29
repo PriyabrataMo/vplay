@@ -232,5 +232,55 @@ const getCurrentUser = asynchandler( async (req,res)=>{
     return res.status(200).json(new ApiResponse(200 , req.user , "User Fetched Successfully"))
 })
 
+const updateAccountDetails = asynchandler(async(req , res)=>{
+    const {fullName , email } = req.body;
+    if(!fullName && !email){
+        throw new ApiError(400 , "All fields are required")
+    }
+    const user = User.findByIdAndUpdate(req.user?._id,{
+        $set: {
+            fullName:fullName,
+            email:email
+        }
+    },{}).select("-password")
+    return res.status(200).json(new ApiResponse(200 , user , "User Updated Successfully"))
+})
 
-export { registerUser, loginUser , logoutUser , refreshAccessToken , changeCurrentPassword , getCurrentUser }
+const updateAvatar = asynchandler(async(req , res)=>{
+    const avatarlocalpath = req.file?.path;
+    if(!avatarlocalpath){
+        throw new ApiError(400,"Avatar is required")
+    }
+    const avtar = await uploadOnCloudinary(avatarlocalpath);
+    if(!avtar){
+        throw new ApiError(500,"Error in uploading avatar")
+    }
+    const user = User.findByIdAndUpdate(req.user?._id,{
+        $set: {
+            avatar:avtar.url
+        }
+    },{}).select("-password")
+    return res.status(200).json(new ApiResponse(200 , user , "Avatar Updated Successfully"))
+})
+
+const updateCoverImage = asynchandler(async(req , res)=>{
+    const coverImagePath = req.file?.path;
+    if(!coverImagePath){
+        throw new ApiError(400,"Avatar is required")
+    }
+    const coverImage = await uploadOnCloudinary(coverImagePath);
+    if(!coverImage){
+        throw new ApiError(500,"Error in uploading avatar")
+    }
+    const user = User.findByIdAndUpdate(req.user?._id,{
+        $set: {
+            coverImage:coverImage.url
+        }
+    },{}).select("-password")
+    return res.status(200).json(new ApiResponse(200 , user , "Avatar Updated Successfully"))
+})
+
+
+export { registerUser, loginUser , logoutUser , 
+    refreshAccessToken , changeCurrentPassword , getCurrentUser , 
+    updateAccountDetails , updateAvatar , updateCoverImage }
